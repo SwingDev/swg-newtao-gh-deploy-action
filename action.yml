@@ -8,6 +8,8 @@ inputs:
     description: 'You can override the TAO API endpoint used, default being "https://api.swingdevenvs.com".'
   tao-access-token:
     description: 'TAO access token.'
+  tao-project-id:
+    description: 'TAO project ID'
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -7,13 +7,13 @@ export class Poller {
   private readonly pollingStart: number;
 
   constructor(
-    private readonly timeout: number,
-    private readonly resolution: number,
+    private readonly timeoutMs: number,
+    private readonly resolutionMs: number,
     private readonly pollFn: (() => Promise<void>),
   ) {
     this.pollFn = pollFn;
-    this.resolution = resolution;
-    this.timeout = timeout;
+    this.resolutionMs = resolutionMs;
+    this.timeoutMs = timeoutMs;
 
     this.pollingStart = Date.now();
 
@@ -32,11 +32,11 @@ export class Poller {
       }
 
       // eslint-disable-next-line no-await-in-loop
-      await sleepFor(this.resolution);
+      await sleepFor(this.resolutionMs);
     }
   }
 
   private shouldStillPoll() {
-    return Date.now() - this.pollingStart < this.timeout;
+    return Date.now() - this.pollingStart < this.timeoutMs;
   }
 }

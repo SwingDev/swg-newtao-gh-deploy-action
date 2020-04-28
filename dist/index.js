@@ -881,21 +881,21 @@ class DeployCmd {
     }
     static messageFromEnv(env) {
         const components = [];
-        components.push(`Environment ID: ${env.id}`);
+        components.push(`**Environment ID:** ${env.id}`);
         if (env.load_balancer_config === null) {
             components.push('', 'Domains have not been assigned yet.');
         }
         else {
             components.push('', 'After they\'re built, you\'ll find your services at:');
-            components.push(...env.load_balancer_config.map((l) => `${l.service_name}:${l.service_port} -> ${l.uri}}`));
+            components.push(...env.load_balancer_config.map((l) => `- [${l.service_name}:${l.service_port}](${l.uri})`));
         }
         components.push('', 'Progress:');
-        components.push(`\tDomain assignment: ${env.domain_assignment_done ? 'up' : 'down'}`);
-        components.push(`\tConfiguration: ${env.runner_configuration_done ? 'up' : 'down'}`);
-        components.push(`\tInstances: ${env.runner_done ? 'up' : 'down'}`);
-        components.push(`\tLoad Balancer; ${env.load_balancer_done ? 'up' : 'down'}`);
+        components.push(`-\tDomain assignment: ${env.domain_assignment_done ? ':+1:' : ':soon:'}`);
+        components.push(`-\tConfiguration: ${env.runner_configuration_done ? ':+1:' : ':soon:'}`);
+        components.push(`-\tInstances: ${env.runner_done ? ':+1:' : ':soon:'}`);
+        components.push(`-\tLoad Balancer: ${env.load_balancer_done ? ':+1:' : ':soon:'}`);
         components.push('');
-        components.push('Note: After it\'s all up you\'ll still have to wait for the Docker containers to get built and run.');
+        components.push('*Note: After it\'s all up you\'ll still have to wait for the Docker containers to get built and run.*');
         return components.join('\n');
     }
     run() {
@@ -904,7 +904,7 @@ class DeployCmd {
             yield this.taoClient.startEnvironment(env.project_id, env.id);
             yield this.prCommentRepository.addReaction(this.triggeredByCommentId, 'rocket');
             const comment = yield this.prCommentRepository.addComment(DeployCmd.messageFromEnv(env));
-            yield new poller_1.Poller(600, 10, () => __awaiter(this, void 0, void 0, function* () {
+            yield new poller_1.Poller(600 * 1000, 10 * 1000, () => __awaiter(this, void 0, void 0, function* () {
                 const updatedEnv = yield this.taoClient.getEnvironment(env.project_id, env.id);
                 yield this.prCommentRepository.updateComment(comment.id, DeployCmd.messageFromEnv(updatedEnv));
                 if (updatedEnv.load_balancer_done) {
@@ -5374,13 +5374,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const promises_1 = __webpack_require__(448);
 const errors_1 = __webpack_require__(189);
 class Poller {
-    constructor(timeout, resolution, pollFn) {
-        this.timeout = timeout;
-        this.resolution = resolution;
+    constructor(timeoutMs, resolutionMs, pollFn) {
+        this.timeoutMs = timeoutMs;
+        this.resolutionMs = resolutionMs;
         this.pollFn = pollFn;
         this.pollFn = pollFn;
-        this.resolution = resolution;
-        this.timeout = timeout;
+        this.resolutionMs = resolutionMs;
+        this.timeoutMs = timeoutMs;
         this.pollingStart = Date.now();
         this.promise = this.run();
     }
@@ -5395,12 +5395,12 @@ class Poller {
                         break;
                     }
                 }
-                yield promises_1.sleepFor(this.resolution);
+                yield promises_1.sleepFor(this.resolutionMs);
             }
         });
     }
     shouldStillPoll() {
-        return Date.now() - this.pollingStart < this.timeout;
+        return Date.now() - this.pollingStart < this.timeoutMs;
     }
 }
 exports.Poller = Poller;
@@ -9151,6 +9151,43 @@ module.exports.Hook = Hook
 module.exports.Singular = Hook.Singular
 module.exports.Collection = Hook.Collection
 
+
+/***/ }),
+
+/***/ 527:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+class PRRepository {
+    constructor(octokit, repo, owner) {
+        this.octokit = octokit;
+        this.repo = repo;
+        this.owner = owner;
+    }
+    getPullRequest(pullRequestId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const res = yield this.octokit.pulls.get({
+                owner: this.owner,
+                repo: this.repo,
+                pull_number: pullRequestId,
+            });
+            return res.data;
+        });
+    }
+}
+exports.PRRepository = PRRepository;
+//# sourceMappingURL=pr.repository.js.map
 
 /***/ }),
 
@@ -23491,21 +23528,17 @@ function getConfig(err) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = __webpack_require__(470);
-const github_1 = __webpack_require__(469);
 const errors_1 = __webpack_require__(23);
 class InputParser {
     static parse(context) {
         const commentBody = context.payload.comment.body;
         const commentId = context.payload.comment.id;
-        const client = new github_1.GitHub(core.getInput('repo-token'));
         if (commentBody[0] !== '/') {
             throw new errors_1.UnprocessableInputError();
         }
         const components = commentBody.split(' ');
         return {
             commentId,
-            client,
             command: components[0],
             args: components.slice(1),
         };
@@ -23590,6 +23623,23 @@ if (process.platform === 'linux') {
 
 /***/ }),
 
+/***/ 659:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __webpack_require__(470);
+exports.config = {
+    taoEndpoint: core.getInput('tao-endpoint'),
+    taoAccessToken: core.getInput('tao-access-token'),
+    token: core.getInput('token'),
+    taoProjectId: core.getInput('tao-project-id'),
+};
+//# sourceMappingURL=config.js.map
+
+/***/ }),
+
 /***/ 669:
 /***/ (function(module) {
 
@@ -23622,26 +23672,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = __webpack_require__(470);
 const util_1 = __webpack_require__(669);
+const core = __webpack_require__(470);
 const github_1 = __webpack_require__(469);
 const deploy_cmd_1 = __webpack_require__(77);
 const pr_comment_repository_1 = __webpack_require__(116);
 const input_parser_1 = __webpack_require__(645);
 const tao_client_1 = __webpack_require__(695);
+const pr_repository_1 = __webpack_require__(527);
+const config_1 = __webpack_require__(659);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (github_1.context.payload.pull_request === undefined) {
-            core.setFailed('This action does not support non-PR related events.');
+        if (github_1.context.payload.issue === undefined) {
+            core.setFailed('This action does not support non-PR-comment related events.');
             return;
         }
+        const githubClient = new github_1.GitHub(config_1.config.token);
         const intent = input_parser_1.InputParser.parse(github_1.context);
-        const pullNumber = github_1.context.payload.pull_request.number;
-        const branchName = github_1.context.payload.pull_request.head.ref;
-        const taoClient = new tao_client_1.TaoClient(core.getInput('tao-endpoint'), core.getInput('tao-access-token'));
-        const prCommentRepository = new pr_comment_repository_1.PRCommentRepository(intent.client, github_1.context.repo.repo, github_1.context.repo.owner, pullNumber);
+        const pullRequestId = github_1.context.payload.issue.number;
+        const prRepository = new pr_repository_1.PRRepository(githubClient, github_1.context.repo.repo, github_1.context.repo.owner);
+        const prCommentRepository = new pr_comment_repository_1.PRCommentRepository(githubClient, github_1.context.repo.repo, github_1.context.repo.owner, pullRequestId);
+        const pullRequest = yield prRepository.getPullRequest(pullRequestId);
+        const branchName = pullRequest.head.ref;
+        const taoClient = new tao_client_1.TaoClient(config_1.config.taoEndpoint, config_1.config.taoAccessToken);
         if (intent.command === '/deploy') {
-            const cmd = new deploy_cmd_1.DeployCmd(core.getInput('project-id'), intent.commentId, `git@github.com:${github_1.context.repo.owner}/${github_1.context.repo.owner}.git`, branchName, taoClient, prCommentRepository);
+            const cmd = new deploy_cmd_1.DeployCmd(config_1.config.taoProjectId, intent.commentId, `git@github.com:${github_1.context.repo.owner}/${github_1.context.repo.owner}.git`, branchName, taoClient, prCommentRepository);
             yield cmd.run();
         }
     });

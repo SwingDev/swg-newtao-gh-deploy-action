@@ -10,25 +10,6 @@ export class PRCommentRepository {
   ) {
   }
 
-  // public async getComments(
-  // ): Promise<RestEndpointMethodTypes['issues']['listComments']['response']['data']> {
-  //   const res = await this.octokit.issues.listComments({
-  //     owner: this.owner,
-  //     repo: this.repo,
-  //     issue_number: this.pullNumber
-  //   });
-  //
-  //   return res.data;
-  // }
-
-  // public async myComments(
-  // ): Promise<RestEndpointMethodTypes['issues']['listComments']['response']['data']> {
-  //   const comments = await this.getComments();
-  //
-  //   return comments.filter((c) =>
-  //     c.user.login === "github-actions[bot]");
-  // }
-
   public async addComment(
     body: string,
   ): Promise<RestEndpointMethodTypes['issues']['createComment']['response']['data']> {

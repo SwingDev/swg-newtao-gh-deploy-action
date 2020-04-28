@@ -17,7 +17,7 @@ export class DeployCmd {
   public static messageFromEnv(env: EnvironmentResponseDTO): string {
     const components: string[] = [];
 
-    components.push(`Environment ID: ${env.id}`);
+    components.push(`**Environment ID:** ${env.id}`);
 
     if (env.load_balancer_config === null) {
       components.push('', 'Domains have not been assigned yet.');
@@ -26,19 +26,19 @@ export class DeployCmd {
 
       components.push(
         ...env.load_balancer_config.map(
-          (l) => `${l.service_name}:${l.service_port} -> ${l.uri}}`,
+          (l) => `- [${l.service_name}:${l.service_port}](${l.uri})`,
         ),
       );
     }
 
     components.push('', 'Progress:');
-    components.push(`\tDomain assignment: ${env.domain_assignment_done ? 'up' : 'down'}`);
-    components.push(`\tConfiguration: ${env.runner_configuration_done ? 'up' : 'down'}`);
-    components.push(`\tInstances: ${env.runner_done ? 'up' : 'down'}`);
-    components.push(`\tLoad Balancer; ${env.load_balancer_done ? 'up' : 'down'}`);
+    components.push(`-\tDomain assignment: ${env.domain_assignment_done ? ':+1:' : ':soon:'}`);
+    components.push(`-\tConfiguration: ${env.runner_configuration_done ? ':+1:' : ':soon:'}`);
+    components.push(`-\tInstances: ${env.runner_done ? ':+1:' : ':soon:'}`);
+    components.push(`-\tLoad Balancer: ${env.load_balancer_done ? ':+1:' : ':soon:'}`);
 
     components.push('');
-    components.push('Note: After it\'s all up you\'ll still have to wait for the Docker containers to get built and run.');
+    components.push('*Note: After it\'s all up you\'ll still have to wait for the Docker containers to get built and run.*');
 
     return components.join('\n');
   }
@@ -56,7 +56,7 @@ export class DeployCmd {
 
     const comment = await this.prCommentRepository.addComment(DeployCmd.messageFromEnv(env));
 
-    await new Poller(600, 10, async () => {
+    await new Poller(600 * 1000, 10 * 1000, async () => {
       const updatedEnv = await this.taoClient.getEnvironment(env.project_id, env.id);
 
       await this.prCommentRepository.updateComment(
