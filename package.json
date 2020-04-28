@@ -1,0 +1,41 @@
+{
+  "name": "swg-newtao-gh-deploy-action",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "build": "tsc",
+    "package": "npm run build && ncc build src/index.js -o dist",
+    "test": "jest --passWithNoTests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/SwingDev/swg-newtao-gh-deploy-action.git"
+  },
+  "author": "Tomek Kopczuk <tkopczuk@gmail.com> (https://github.com/tkopczuk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SwingDev/swg-newtao-gh-deploy-action/issues"
+  },
+  "homepage": "https://github.com/SwingDev/swg-newtao-gh-deploy-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.3",
+    "@actions/github": "^2.1.1",
+    "@octokit/core": "^2.5.0",
+    "@octokit/plugin-rest-endpoint-methods": "^3.8.0",
+    "@octokit/types": "^2.12.1",
+    "@zeit/ncc": "^0.22.1",
+    "gaxios": "^3.0.3",
+    "jest": "^25.4.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-typescript": "^7.2.1",
+    "eslint-plugin-import": "^2.20.2",
+    "git-hooks": "^1.1.10",
+    "typescript": "^3.8.3"
+  }
+}

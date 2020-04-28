@@ -1,0 +1,18 @@
+name: 'New Tao deploy action'
+description: 'Creates and starts a new environment through TAO.'
+inputs:
+  token:
+    description: 'A repo scoped GitHub Personal Access Token.'
+    required: true
+  tao-endpoint:
+    description: 'You can override the TAO API endpoint used, default being "https://api.swingdevenvs.com".'
+  tao-access-token:
+    description: 'TAO access token.'
+  tao-project-id:
+    description: 'TAO project ID'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+branding:
+  icon: 'target'
+  color: 'gray-dark'
